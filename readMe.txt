@@ -7,5 +7,7 @@ After submitting a value or leaving the last cell empty with "RETURN" keyboard i
 
 Press "Enter" to solve puzzle.
 Press "Space" to load preset puzzle. 
+You can remove the solving information by setting DisplayPossible to False to enter "Normal Solving Mode" 
+You can still press "Enter" to solve in this mode. 
 
 Webcam Inputs are almost complete. 
