@@ -1,7 +1,8 @@
 import pygame, sys, math, time 
 from pygame.locals import *
 
-DisplayPossible = False 
+DisplayMistakes = True  
+DisplayPossible = True  
 
 FPS = 60
 SleepTime = 0.1
@@ -243,14 +244,20 @@ class Interface:
 			if isinstance(self.currentGrid[currentPosLargeX, currentPosLargeY], list):
 				if selectedValue in self.currentGrid[currentPosLargeX, currentPosLargeY]:
 					self.currentGrid[currentPosLargeX, currentPosLargeY] = selectedValue
+					self.displayCurrentCell = True 
+					self.currentCell = [currentPosLargeX, currentPosLargeY]
 					self.removeImpossible()
 
 	def removeValue(self):
 		currentPosLargeX = ((self.mousePositionX - CellSize) + ThickLineWidth / 2) / (SmallCellSize * 3)
 		currentPosLargeY = ((self.mousePositionY - CellSize) + ThickLineWidth / 2) / (SmallCellSize * 3)
 
-		self.currentGrid[currentPosLargeX, currentPosLargeY] = list(FullCell)
-		self.refreshCells()
+		if not isinstance(self.currentGrid[currentPosLargeX, currentPosLargeY], list):
+			self.displayCurrentCell = True
+			self.currentCell = [currentPosLargeX, currentPosLargeY]
+
+			self.currentGrid[currentPosLargeX, currentPosLargeY] = list(FullCell)
+			self.refreshCells()
 
 
 	def refreshCells(self):
@@ -373,28 +380,35 @@ class Interface:
 				if y + 1 in self.currentGrid[cell[0], cell[1]]:
 					coords.append(cell)
 
-		inLineX = True 
-		xCoord = coords[0][0]
-		for z in range(len(coords)):
-			if coords[z][0] != xCoord:
-				inLineX = False
+		if len(coords) >= 2:
 
-		inLineY = True 
-		yCoord = coords[0][0]
-		for z in range(len(coords)):
-			if coords[z][1] != yCoord:
-				inLineY = False
+			inLineX = True 
+			xCoord = coords[0][0]
+
+			
+
+			for z in range(len(coords)):
+				if coords[z][0] != xCoord:
+					inLineX = False
+
+			inLineY = True 
+			yCoord = coords[0][0]
+			for z in range(len(coords)):
+				if coords[z][1] != yCoord:
+					inLineY = False
 
 
 
-		if inLineX:
-			return True, coords[0][0], None, y + 1, coords
+			if inLineX:
+				return True, coords[0][0], None, y + 1, coords
 
-		elif inLineY:
-			return True, None, coords[0][1], y + 1, coords
+			elif inLineY:
+				return True, None, coords[0][1], y + 1, coords
 
+			else:
+				return False, None, None, None, None
 		else:
-			return False, None, None, None, None
+			return False, None, None, None, None 
 
 
 	def checkForMistakes(self):
@@ -403,6 +417,7 @@ class Interface:
 			if isinstance(self.currentGrid[cell], list):
 				if self.currentGrid[cell].count("") == 9:
 					mistakes.append(cell)
+
 
 		self.mistakeCells = mistakes
 
@@ -449,7 +464,18 @@ class Interface:
 	def solve(self):
 		successful = self.solveLoop()
 		while successful:
-			successful = self.solveLoop()				
+			successful = self.solveLoop()		
+
+	def checkSolve(self):
+		if len(self.mistakeCells) >= 1:
+			return False
+		else:
+			for cell in self.currentGrid:
+				if isinstance(self.currentGrid[cell], list):		
+					return False
+
+		return True 
+
 		
 	def solveStep(self):
 		for cell in self.currentGrid:
@@ -488,7 +514,8 @@ class Interface:
 		self.DisplayScreen.fill(White)
 		pygame.draw.rect(self.DisplayScreen, OffWhite, (CellSize, CellSize, CellSize * 9, CellSize * 9), 0)
 
-		self.drawMistakes()
+		if DisplayMistakes:
+			self.drawMistakes()
 		self.drawGrid()
 		if DisplayPossible:
 			self.drawPossibleColumns()
@@ -562,6 +589,9 @@ class Interface:
 							self.currentGrid[self.currentCell[0], self.currentCell[1]] = list(FullCell)
 							self.refreshCells()
 
+					elif event.key == 48:
+						self.displayCurrentCell = False 
+
 					elif event.key <= 57 and event.key > 48:
 						if self.displayCurrentCell == False:
 							self.displayCurrentCell = True 
@@ -600,6 +630,9 @@ class Interface:
 							self.currentCell[0] += 1
 						else:
 							self.currentCell[0] = 0
+
+					if event.key == K_t:
+						print self.checkSolve()
 
 
 	
